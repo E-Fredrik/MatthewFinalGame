@@ -9,6 +9,7 @@ export default class CosmicEscape extends Phaser.Scene {
 		this.gems = undefined // Changed from gem to gems
 		this.scoreLabel = undefined
 		this.score = 0
+		this.rock = undefined
 	}
 
 	preload() {
@@ -19,6 +20,7 @@ export default class CosmicEscape extends Phaser.Scene {
 			this.load.image(`ship_right_${i}`, `images/Ships/1/Pattern2/Blue/Right/${i}.png`)
 		}
 		this.load.image("gem", "images/GemsImage/PixelArtPack/Gem1/BLUE/1.png")
+		this.load.image("rock", "images/Rocks/rock2.png")
 	}
 
 	create() {
@@ -57,21 +59,34 @@ export default class CosmicEscape extends Phaser.Scene {
 		this.gems = this.physics.add.group({
 			classType: FallingObject,
 			runChildUpdate: true,
-			maxSize: 10
+			maxSize: 10,
 		})
 
 		// THEN set up overlap detection
 		this.physics.add.overlap(this.ship, this.gems, this.collectGem, null, this)
-		
+
 		this.scoreLabel = this.add.text(10, 10, "Score", {
 			fontSize: "16px",
 			color: "black",
 			backgroundColor: "white",
 		})
-		
+
+		this.time.addEvent({
+			delay: Phaser.Math.Between(1000, 3000), // Spawn every 1 second
+			callback: this.spawnGem,
+			callbackScope: this,
+			loop: true,
+		})
+
+		this.rock = this.physics.add.group({
+			classType: FallingObject,
+			runChildUpdate: true,
+			maxSize: 10,
+		})
+
 		this.time.addEvent({
 			delay: 1000, // Spawn every 1 second
-			callback: this.spawnGem,
+			callback: this.spawnRock,
 			callbackScope: this,
 			loop: true,
 		})
@@ -79,7 +94,7 @@ export default class CosmicEscape extends Phaser.Scene {
 
 	update(time) {
 		this.stars.children.iterate((child) => {
-			child.setVelocityX(-400)
+			child.setVelocityX(-270)
 			if (child.x < 0) {
 				child.y = Phaser.Math.Between(0, 600)
 				child.x = 1515
@@ -108,17 +123,32 @@ export default class CosmicEscape extends Phaser.Scene {
 	spawnGem() {
 		const config = {
 			speed: -400,
-			rotation: 0.02,
+			rotation: 0,
 		}
 		const gem = this.gems.get(1550, 0, "gem", config)
-		const positionY = Phaser.Math.Between(30, 570)
+		const positionY = Phaser.Math.Between(40, 560)
 		if (gem) {
 			gem.spawn(positionY)
 		}
 	}
 
 	collectGem(ship, gem) {
+		if (!gem.active) {
+			return
+		}
 		this.score += 1
 		gem.die() // Use die() instead of destroy() for object pooling
+	}
+
+	spawnRock() {
+		const config = {
+			speed: Phaser.Math.Between(-300, -500),
+			rotation: 0,
+		}
+		const rock = this.rock.get(1550, 0, "rock", config)
+		const positionY = Phaser.Math.Between(40, 560)
+		if (rock) {
+			rock.spawn(positionY)
+		}
 	}
 }
