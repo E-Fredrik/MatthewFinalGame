@@ -6,7 +6,7 @@ export default class CosmicEscape extends Phaser.Scene {
 		this.stars = undefined
 		this.ship = undefined
 		this.cursors = undefined
-		this.gem = undefined
+		this.gems = undefined // Changed from gem to gems
 		this.scoreLabel = undefined
 		this.score = 0
 	}
@@ -53,19 +53,24 @@ export default class CosmicEscape extends Phaser.Scene {
 			repeat: -1,
 		})
 
-		this.physics.add.overlap(this.ship, this.gem, this.collectGem, null, this)
+		// Create gems group FIRST
+		this.gems = this.physics.add.group({
+			classType: FallingObject,
+			runChildUpdate: true,
+			maxSize: 10
+		})
+
+		// THEN set up overlap detection
+		this.physics.add.overlap(this.ship, this.gems, this.collectGem, null, this)
+		
 		this.scoreLabel = this.add.text(10, 10, "Score", {
 			fontSize: "16px",
 			color: "black",
 			backgroundColor: "white",
 		})
-		this.gem = this.physics.add.group({
-			classType: FallingObject,
-			runChildUpdate: true,
-			allowGravity: false,
-		})
+		
 		this.time.addEvent({
-			delay: 4000,
+			delay: 1000, // Spawn every 1 second
 			callback: this.spawnGem,
 			callbackScope: this,
 			loop: true,
@@ -82,7 +87,7 @@ export default class CosmicEscape extends Phaser.Scene {
 		})
 
 		this.moveShip(this.ship)
-		this.scoreLabel.setText("Score :" + this.score)
+		this.scoreLabel.setText("Score: " + this.score)
 	}
 
 	createShip() {
@@ -103,16 +108,17 @@ export default class CosmicEscape extends Phaser.Scene {
 	spawnGem() {
 		const config = {
 			speed: -400,
-			rotation: 0,
+			rotation: 0.02,
 		}
-		const gem = this.gem.get(1550, 0, "gem", config)
+		const gem = this.gems.get(1550, 0, "gem", config)
 		const positionY = Phaser.Math.Between(30, 570)
 		if (gem) {
 			gem.spawn(positionY)
 		}
 	}
+
 	collectGem(ship, gem) {
 		this.score += 1
-		gem.destroy()
+		gem.die() // Use die() instead of destroy() for object pooling
 	}
 }
