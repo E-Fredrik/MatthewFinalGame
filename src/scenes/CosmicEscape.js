@@ -123,7 +123,7 @@ export default class CosmicEscape extends Phaser.Scene {
 	}
 
 	moveShip(ship) {
-		if (this.cursors.up.isDown || this.cursors.space.isDown) {
+		if (this.cursors.up.isDown || this.cursors.space.isDown || this.input.activePointer.isDown) {
 			ship.setVelocityY(-170)
 			ship.anims.play("move_up", true)
 		} else {
