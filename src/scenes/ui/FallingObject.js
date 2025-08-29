@@ -1,5 +1,4 @@
 import Phaser from "phaser"
-
 export default class FallingObject extends Phaser.Physics.Arcade.Sprite {
 	constructor(scene, x, y, texture, config = {}) {
 		super(scene, x, y, texture)

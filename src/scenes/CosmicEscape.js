@@ -1,6 +1,9 @@
 import Phaser from "phaser"
 import FallingObject from "./ui/FallingObject"
 export default class CosmicEscape extends Phaser.Scene {
+	constructor() {
+		super("cosmic-escape.scene")
+	}
 	init() {
 		this.space = undefined
 		this.stars = undefined
@@ -10,6 +13,7 @@ export default class CosmicEscape extends Phaser.Scene {
 		this.scoreLabel = undefined
 		this.score = 0
 		this.rock = undefined
+		this.gamesound = undefined
 	}
 
 	preload() {
@@ -21,6 +25,9 @@ export default class CosmicEscape extends Phaser.Scene {
 		}
 		this.load.image("gem", "images/GemsImage/PixelArtPack/Gem1/BLUE/1.png")
 		this.load.image("rock", "images/Rocks/rock2.png")
+		this.load.audio("crash", "images/crashrock.mp3")
+		this.load.audio("collectgemsound", "images/collectgemsound.mp3")
+		this.load.audio("gamesound", "images/gamesound.mp3")
 	}
 
 	create() {
@@ -90,6 +97,10 @@ export default class CosmicEscape extends Phaser.Scene {
 			callbackScope: this,
 			loop: true,
 		})
+		this.physics.add.overlap(this.ship, this.rock, this.rockHit, null, this)
+		this.gamesound = this.sound.add("gamesound")
+		this.gamesound.loop = true
+		this.gamesound.play()
 	}
 
 	update(time) {
@@ -113,7 +124,7 @@ export default class CosmicEscape extends Phaser.Scene {
 
 	moveShip(ship) {
 		if (this.cursors.up.isDown || this.cursors.space.isDown) {
-			ship.setVelocityY(-150)
+			ship.setVelocityY(-170)
 			ship.anims.play("move_up", true)
 		} else {
 			ship.anims.play("idle", true)
@@ -138,17 +149,28 @@ export default class CosmicEscape extends Phaser.Scene {
 		}
 		this.score += 1
 		gem.die() // Use die() instead of destroy() for object pooling
+		this.sound.play("collectgemsound")
 	}
 
 	spawnRock() {
 		const config = {
-			speed: Phaser.Math.Between(-300, -500),
-			rotation: 0,
+			speed: Phaser.Math.Between(-350, -500),
+			rotation: 0.02,
 		}
 		const rock = this.rock.get(1550, 0, "rock", config)
 		const positionY = Phaser.Math.Between(40, 560)
 		if (rock) {
 			rock.spawn(positionY)
 		}
+	}
+
+	rockHit(ship, rock) {
+		if (!rock.active) {
+			return
+		}
+		rock.die()
+		this.gamesound.stop()
+		this.scene.start("over-scene", { score: this.score })
+		this.sound.play("crash")
 	}
 }
