@@ -17,7 +17,7 @@ export default class CosmicEscape extends Phaser.Scene {
 	}
 
 	preload() {
-		this.load.image("space", "images/space.jpg")
+		this.load.image("space", "images/Space.jpg")
 		this.load.image("star", "images/kenney_simple-space/PNG/Default/star_small.png")
 
 		for (let i = 1; i <= 6; i++) {
